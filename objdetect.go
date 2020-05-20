@@ -6,7 +6,9 @@ package gocv
 */
 import "C"
 import (
+	"fmt"
 	"image"
+	"reflect"
 	"unsafe"
 )
 
@@ -237,4 +239,50 @@ func (a *QRCodeDetector) Detect(input Mat, points *Mat) bool {
 func (a *QRCodeDetector) Decode(input Mat, points Mat, straight_qrcode *Mat) string {
 	goResult := C.GoString(C.QRCodeDetector_DetectAndDecode(a.p, input.p, points.p, straight_qrcode.p))
 	return string(goResult)
+}
+
+// Detects QR codes in image and returns the vector of the quadrangles containing the codes.
+//
+// each quadrangle would be returned as a row in the `points` Mat and each point is a Vecf.
+// For further details, please see:
+// https://docs.opencv.org/master/de/dc3/classcv_1_1QRCodeDetector.html#aaf2b6b2115b8e8fbc9acf3a8f68872b6
+func (a *QRCodeDetector) DetectMulti(input Mat, points *Mat) bool {
+	result := C.QRCodeDetector_DetectMulti(a.p, input.p, points.p)
+	return bool(result)
+}
+
+
+func (a *QRCodeDetector) DetectAndDecodeMulti(input Mat, points *Mat) (decoded []string) {
+	cDecoded := C.CStrings{}
+	result := C.QRCodeDetector_DetectAndDecodeMulti(a.p, input.p, &cDecoded, points.p)
+	fmt.Println("QRCodeDetector_DetectAndDecodeMulti: ", result)
+	fmt.Println("int(cDecoded.length) ", int(cDecoded.length))
+	fmt.Println("cDecoded.strs", cDecoded.strs)
+	fmt.Println("unsafe.Pointer(cDecoded.strs)", unsafe.Pointer(cDecoded.strs))
+	fmt.Println("*cDecoded.strs", *cDecoded.strs)
+	fmt.Println("**cDecoded.strs", **cDecoded.strs)
+	fmt.Println("string(**cDecoded.strs)", string(**cDecoded.strs))
+	fmt.Println("unsafe.Sizeof(cDecoded.strs)", unsafe.Sizeof(cDecoded.strs))
+	//for i := 0; i < 24; i++ {
+	//	fmt.Println(fmt.Println("string(**cDecoded.strs)", string(**cDecoded.strs)))
+	//}
+
+	h := &reflect.SliceHeader{
+		Data: uintptr(unsafe.Pointer(cDecoded.strs)),
+		Len:  int(cDecoded.length),
+		Cap:  int(cDecoded.length),
+	}
+	fmt.Println("before unsafe.Pointer")
+	pcstrs := *(*[]string)(unsafe.Pointer(h))
+	fmt.Println("after unsafe.Pointer")
+	fmt.Println("pcstrs", pcstrs)
+	//fmt.Println("pcstrs", len(pcstrs))
+	//fmt.Println("pcstrs[0]", pcstrs[0])
+	//fmt.Println("pcstrs[0]", string(pcstrs[0]))
+	//for i := 0; i < int(cDecoded.length); i++ {
+	//	fmt.Println("pcstrs[i]", pcstrs[i], len(pcstrs[i]))
+	//	//decoded = append(decoded, string(pcstrs[i]))
+	//}
+	fmt.Println("returning...")
+	return
 }

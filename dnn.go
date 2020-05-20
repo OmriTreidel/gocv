@@ -443,7 +443,6 @@ func (net *Net) GetLayerNames() (names []string) {
 		Cap:  int(cstrs.length),
 	}
 	pcstrs := *(*[]string)(unsafe.Pointer(h))
-
 	for i := 0; i < int(cstrs.length); i++ {
 		names = append(names, string(pcstrs[i]))
 	}
