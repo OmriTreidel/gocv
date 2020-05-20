@@ -6,7 +6,6 @@ package gocv
 */
 import "C"
 import (
-	"fmt"
 	"image"
 	"unsafe"
 )
@@ -240,7 +239,7 @@ func (a *QRCodeDetector) Decode(input Mat, points Mat, straight_qrcode *Mat) str
 	return string(goResult)
 }
 
-// Detects QR codes in image and returns the vector of the quadrangles containing the codes.
+// Detects QR codes in image and finds of the quadrangles containing the codes.
 //
 // each quadrangle would be returned as a row in the `points` Mat and each point is a Vecf.
 // For further details, please see:
@@ -250,22 +249,15 @@ func (a *QRCodeDetector) DetectMulti(input Mat, points *Mat) bool {
 	return bool(result)
 }
 
-func GoStrings(strs C.CStrings) []string {
-	length := int(strs.length)
-	tmpslice := (*[1 << 30]*C.char)(unsafe.Pointer(strs.strs))[:length:length]
-	gostrings := make([]string, length)
-	for i, s := range tmpslice {
-		gostrings[i] = C.GoString(s)
-	}
-	return gostrings
-}
 
+// Detects QR codes in image and finds of the quadrangles containing the codes and decode the decode the QRCodes to strings.
+//
+// each quadrangle would be returned as a row in the `points` Mat and each point is a Vecf.
+// For further details, please see:
 func (a *QRCodeDetector) DetectAndDecodeMulti(input Mat, points *Mat) (decoded []string) {
 	cDecoded := C.CStrings{}
+	defer C.CStrings_Close(cDecoded)
 	_ = C.QRCodeDetector_DetectAndDecodeMulti(a.p, input.p, &cDecoded, points.p)
-
-	decoded = GoStrings(cDecoded)
-	fmt.Printf("slice %v\n", decoded)
-
+	decoded = toGoStrings(cDecoded)
 	return
 }

@@ -1915,6 +1915,16 @@ func toGoBytes(b C.struct_ByteArray) []byte {
 	return C.GoBytes(unsafe.Pointer(b.data), b.length)
 }
 
+func toGoStrings(strs C.CStrings) []string {
+	length := int(strs.length)
+	tmpslice := (*[1 << 30]*C.char)(unsafe.Pointer(strs.strs))[:length:length]
+	gostrings := make([]string, length)
+	for i, s := range tmpslice {
+		gostrings[i] = C.GoString(s)
+	}
+	return gostrings
+}
+
 func toRectangles(ret C.Rects) []image.Rectangle {
 	cArray := ret.rects
 	length := int(ret.length)
