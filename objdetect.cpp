@@ -154,26 +154,16 @@ bool QRCodeDetector_DetectMulti(QRCodeDetector qr, Mat input, Mat points) {
   return qr->detectMulti(*input,*points);
 }
 
-bool QRCodeDetector_DetectAndDecodeMulti(QRCodeDetector qr, Mat input, CStrings* decoded ,Mat points) {
+bool QRCodeDetector_DetectAndDecodeMulti(QRCodeDetector qr, Mat input, CStrings* decoded, Mat points) {
   std::vector<cv::String> decodedCodes;
-//  std::vector<cv::Mat> straightQrCodes;
   bool res = qr->detectAndDecodeMulti(*input, decodedCodes, *points);
 
   const char **strs = new const char*[decodedCodes.size()];
   for (size_t i = 0; i < decodedCodes.size(); ++i) {
       strs[i] = decodedCodes[i].c_str();
-//      std::cout << "decodedCodes[" << i << "] " << decodedCodes[i] << std::endl;
-//      std::cout << "strs[" << i << "] " << strs[i] << std::endl;
   }
 
-
-  std::cout << "size of decodedCodes: " << decodedCodes.size() << std::endl;
-  std::cout << "sizeof(decodedCodes): " << sizeof(decodedCodes) << std::endl;
   decoded->length = decodedCodes.size();
   decoded->strs = strs;
-  std::cout << "size of decodedCodes: " << decoded->length << std::endl;
-  std::cout << "sizeof(decoded): " << sizeof(decoded) << std::endl;
-  std::cout << "sizeof(decoded->strs): " << sizeof(decoded->strs) << std::endl;
-//  decodedCodes.clear();
   return res;
 }

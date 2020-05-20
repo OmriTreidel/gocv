@@ -169,7 +169,6 @@ func TestQRCodeDetector(t *testing.T) {
 	if (len(decoded) != 2) {
 		t.Errorf("Error in TestQRCodeDetector Multi test: number of decoded strings = %d", len(decoded))
 	}
-	fmt.Println(decoded)
 }
 
 
