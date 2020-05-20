@@ -1,6 +1,7 @@
 package gocv
 
 import (
+	"fmt"
 	"image"
 	"testing"
 )
@@ -144,4 +145,31 @@ func TestQRCodeDetector(t *testing.T) {
 	if res2 != res3 {
 		t.Errorf("Error in TestQRCodeDetector res2: %s != res3: %s", res2, res3)
 	}
+
+	// multi
+	img2 := IMRead("images/multi_qrcodes.png", IMReadColor)
+	if img2.Empty() {
+		t.Error("Invalid Mat in QRCodeDetector test")
+	}
+	defer img2.Close()
+
+	multiBox := NewMat()
+	defer multiBox.Close()
+	res4 := detector.DetectMulti(img2, &multiBox)
+	if !res4 {
+		t.Errorf("Error in TestQRCodeDetector Multi test: res == false")
+	}
+
+	if (multiBox.Rows() != 2) {
+		t.Errorf("Error in TestQRCodeDetector Multi test: number of Rows = %d", multiBox.Rows())
+	}
+
+	multiBox2 := NewMat()
+	decoded := detector.DetectAndDecodeMulti(img2, &multiBox2)
+	if (len(decoded) != 2) {
+		t.Errorf("Error in TestQRCodeDetector Multi test: number of decoded strings = %d", len(decoded))
+	}
+	fmt.Println(decoded)
 }
+
+
