@@ -8,7 +8,6 @@ import "C"
 import (
 	"fmt"
 	"image"
-	"reflect"
 	"unsafe"
 )
 
@@ -251,38 +250,22 @@ func (a *QRCodeDetector) DetectMulti(input Mat, points *Mat) bool {
 	return bool(result)
 }
 
+func GoStrings(strs C.CStrings) []string {
+	length := int(strs.length)
+	tmpslice := (*[1 << 30]*C.char)(unsafe.Pointer(strs.strs))[:length:length]
+	gostrings := make([]string, length)
+	for i, s := range tmpslice {
+		gostrings[i] = C.GoString(s)
+	}
+	return gostrings
+}
 
 func (a *QRCodeDetector) DetectAndDecodeMulti(input Mat, points *Mat) (decoded []string) {
 	cDecoded := C.CStrings{}
-	result := C.QRCodeDetector_DetectAndDecodeMulti(a.p, input.p, &cDecoded, points.p)
-	fmt.Println("QRCodeDetector_DetectAndDecodeMulti: ", result)
-	fmt.Println("int(cDecoded.length) ", int(cDecoded.length))
-	fmt.Println("cDecoded.strs", cDecoded.strs)
-	fmt.Println("unsafe.Pointer(cDecoded.strs)", unsafe.Pointer(cDecoded.strs))
-	fmt.Println("*cDecoded.strs", *cDecoded.strs)
-	fmt.Println("**cDecoded.strs", **cDecoded.strs)
-	fmt.Println("string(**cDecoded.strs)", string(**cDecoded.strs))
-	fmt.Println("unsafe.Sizeof(cDecoded.strs)", unsafe.Sizeof(cDecoded.strs))
-	//for i := 0; i < 24; i++ {
-	//	fmt.Println(fmt.Println("string(**cDecoded.strs)", string(**cDecoded.strs)))
-	//}
+	_ = C.QRCodeDetector_DetectAndDecodeMulti(a.p, input.p, &cDecoded, points.p)
 
-	h := &reflect.SliceHeader{
-		Data: uintptr(unsafe.Pointer(cDecoded.strs)),
-		Len:  int(cDecoded.length),
-		Cap:  int(cDecoded.length),
-	}
-	fmt.Println("before unsafe.Pointer")
-	pcstrs := *(*[]string)(unsafe.Pointer(h))
-	fmt.Println("after unsafe.Pointer")
-	fmt.Println("pcstrs", pcstrs)
-	//fmt.Println("pcstrs", len(pcstrs))
-	//fmt.Println("pcstrs[0]", pcstrs[0])
-	//fmt.Println("pcstrs[0]", string(pcstrs[0]))
-	//for i := 0; i < int(cDecoded.length); i++ {
-	//	fmt.Println("pcstrs[i]", pcstrs[i], len(pcstrs[i]))
-	//	//decoded = append(decoded, string(pcstrs[i]))
-	//}
-	fmt.Println("returning...")
+	decoded = GoStrings(cDecoded)
+	fmt.Printf("slice %v\n", decoded)
+
 	return
 }
