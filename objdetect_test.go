@@ -1,7 +1,6 @@
 package gocv
 
 import (
-	"fmt"
 	"image"
 	"testing"
 )

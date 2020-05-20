@@ -436,17 +436,7 @@ func (net *Net) GetUnconnectedOutLayers() (ids []int) {
 func (net *Net) GetLayerNames() (names []string) {
 	cstrs := C.CStrings{}
 	C.Net_GetLayerNames((C.Net)(net.p), &cstrs)
-
-	h := &reflect.SliceHeader{
-		Data: uintptr(unsafe.Pointer(cstrs.strs)),
-		Len:  int(cstrs.length),
-		Cap:  int(cstrs.length),
-	}
-	pcstrs := *(*[]string)(unsafe.Pointer(h))
-	for i := 0; i < int(cstrs.length); i++ {
-		names = append(names, string(pcstrs[i]))
-	}
-	return
+	return toGoStrings(cstrs)
 }
 
 // Close Layer
