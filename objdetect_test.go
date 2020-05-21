@@ -2,6 +2,7 @@ package gocv
 
 import (
 	"image"
+	"image/color"
 	"testing"
 )
 
@@ -123,7 +124,7 @@ func TestQRCodeDetector(t *testing.T) {
 	}
 	defer img.Close()
 
-	// load QRCodeDetector to recognize people
+	// load QRCodeDetector to QR codes
 
 	detector := NewQRCodeDetector()
 	defer detector.Close()
@@ -147,10 +148,10 @@ func TestQRCodeDetector(t *testing.T) {
 
 	// multi
 	img2 := IMRead("images/multi_qrcodes.png", IMReadColor)
+	defer img2.Close()
 	if img2.Empty() {
 		t.Error("Invalid Mat in QRCodeDetector test")
 	}
-	defer img2.Close()
 
 	multiBox := NewMat()
 	defer multiBox.Close()
@@ -159,15 +160,42 @@ func TestQRCodeDetector(t *testing.T) {
 		t.Errorf("Error in TestQRCodeDetector Multi test: res == false")
 	}
 
-	if (multiBox.Rows() != 2) {
+	if multiBox.Rows() != 2 {
 		t.Errorf("Error in TestQRCodeDetector Multi test: number of Rows = %d", multiBox.Rows())
 	}
 
 	multiBox2 := NewMat()
-	decoded := detector.DetectAndDecodeMulti(img2, &multiBox2)
-	if (len(decoded) != 2) {
-		t.Errorf("Error in TestQRCodeDetector Multi test: number of decoded strings = %d", len(decoded))
+	defer multiBox2.Close()
+	decoded, qrCodes := detector.DetectAndDecodeMulti(img2, &multiBox2)
+	defer qrCodes[0].Close()
+	defer qrCodes[1].Close()
+
+	qrCodes0 := padQr(&(qrCodes[0]))
+	defer qrCodes0.Close()
+	decoded0 := detector.Decode(qrCodes0, NewMat(), &qrCodes0)
+	if decoded0 != decoded[0] {
+		t.Errorf("Error in TestQRCodeDetector Multi test: decoded[0]=%s, decoded straigh QR=%s", decoded[0], decoded0)
+	}
+
+	qrCodes1 := padQr(&(qrCodes[1]))
+	defer qrCodes1.Close()
+	decoded1 := detector.Decode(qrCodes1, NewMat(), &qrCodes1)
+	if decoded1 != decoded[1] {
+		t.Errorf("Error in TestQRCodeDetector Multi test: decoded[1]=%s, decoded straigh QR=%s", decoded[1], decoded1)
 	}
 }
 
+func padQr(qr *Mat) Mat {
+	l := 101
+	d := 10
+	L := l + 2*d
 
+	out := NewMatWithSizeFromScalar(NewScalar(255, 255, 255, 255), L, L, MatTypeCV8UC3)
+	qrCodes0 := NewMat()
+	defer qrCodes0.Close()
+	qr.ConvertTo(&qrCodes0, MatTypeCV8UC3)
+
+	Resize(qrCodes0, &qrCodes0, image.Point{L, L}, 0, 0, InterpolationArea)
+	CopyMakeBorder(qrCodes0, &out, d, d, d, d, BorderConstant, color.RGBA{255, 255, 255, 255})
+	return out
+}

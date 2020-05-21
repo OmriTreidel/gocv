@@ -46,7 +46,7 @@ bool QRCodeDetector_Detect(QRCodeDetector qr, Mat input,Mat points);
 const char* QRCodeDetector_Decode(QRCodeDetector qr, Mat input,Mat inputPoints,Mat straight_qrcode);
 void QRCodeDetector_Close(QRCodeDetector qr);
 bool QRCodeDetector_DetectMulti(QRCodeDetector qr, Mat input, Mat points);
-bool QRCodeDetector_DetectAndDecodeMulti(QRCodeDetector qr, Mat input, CStrings* decoded ,Mat points);
+bool QRCodeDetector_DetectAndDecodeMulti(QRCodeDetector qr, Mat input, CStrings* decoded ,Mat points, struct Mats* mats);
 
 #ifdef __cplusplus
 }
