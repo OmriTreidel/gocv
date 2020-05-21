@@ -172,14 +172,16 @@ func TestQRCodeDetector(t *testing.T) {
 
 	qrCodes0 := padQr(&(qrCodes[0]))
 	defer qrCodes0.Close()
-	decoded0 := detector.Decode(qrCodes0, NewMat(), &qrCodes0)
+	m := NewMat()
+	defer m.Close()
+	decoded0 := detector.Decode(qrCodes0, m, &qrCodes0)
 	if decoded0 != decoded[0] {
 		t.Errorf("Error in TestQRCodeDetector Multi test: decoded[0]=%s, decoded straigh QR=%s", decoded[0], decoded0)
 	}
 
 	qrCodes1 := padQr(&(qrCodes[1]))
 	defer qrCodes1.Close()
-	decoded1 := detector.Decode(qrCodes1, NewMat(), &qrCodes1)
+	decoded1 := detector.Decode(qrCodes1, m, &qrCodes1)
 	if decoded1 != decoded[1] {
 		t.Errorf("Error in TestQRCodeDetector Multi test: decoded[1]=%s, decoded straigh QR=%s", decoded[1], decoded1)
 	}
