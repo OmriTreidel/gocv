@@ -249,15 +249,22 @@ func (a *QRCodeDetector) DetectMulti(input Mat, points *Mat) bool {
 	return bool(result)
 }
 
-
 // Detects QR codes in image and finds of the quadrangles containing the codes and decode the decode the QRCodes to strings.
 //
-// each quadrangle would be returned as a row in the `points` Mat and each point is a Vecf.
+// Each quadrangle would be returned as a row in the `points` Mat and each point is a Vecf.
+// Returning a slice of straight QR codes
 // For further details, please see:
-func (a *QRCodeDetector) DetectAndDecodeMulti(input Mat, points *Mat) (decoded []string) {
+func (a *QRCodeDetector) DetectAndDecodeMulti(input Mat, points *Mat) (decoded []string, qrCodes []Mat) {
 	cDecoded := C.CStrings{}
 	defer C.CStrings_Close(cDecoded)
-	_ = C.QRCodeDetector_DetectAndDecodeMulti(a.p, input.p, &cDecoded, points.p)
-	decoded = toGoStrings(cDecoded)
-	return
+	cQrCodes := C.struct_Mats{}
+	defer C.Mats_Close(cQrCodes)
+	C.QRCodeDetector_DetectAndDecodeMulti(a.p, input.p, &cDecoded, points.p, &cQrCodes)
+
+	qrCodes = make([]Mat, cQrCodes.length)
+	for i := C.int(0); i < cQrCodes.length; i++ {
+		qrCodes[i].p = C.Mats_get(cQrCodes, i)
+	}
+
+	return toGoStrings(cDecoded), qrCodes
 }
