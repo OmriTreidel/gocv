@@ -242,6 +242,7 @@ func (a *QRCodeDetector) Decode(input Mat, points Mat, straight_qrcode *Mat) str
 // Detects QR codes in image and finds of the quadrangles containing the codes.
 //
 // each quadrangle would be returned as a row in the `points` Mat and each point is a Vecf.
+// For usage please see TestQRCodeDetector
 // For further details, please see:
 // https://docs.opencv.org/master/de/dc3/classcv_1_1QRCodeDetector.html#aaf2b6b2115b8e8fbc9acf3a8f68872b6
 func (a *QRCodeDetector) DetectMulti(input Mat, points *Mat) bool {
@@ -252,19 +253,30 @@ func (a *QRCodeDetector) DetectMulti(input Mat, points *Mat) bool {
 // Detects QR codes in image and finds of the quadrangles containing the codes and decode the decode the QRCodes to strings.
 //
 // Each quadrangle would be returned as a row in the `points` Mat and each point is a Vecf.
-// Returning a slice of straight QR codes
+// For usage please see TestQRCodeDetector
 // For further details, please see:
-func (a *QRCodeDetector) DetectAndDecodeMulti(input Mat, points *Mat) (decoded []string, qrCodes []Mat) {
+//https://docs.opencv.org/master/de/dc3/classcv_1_1QRCodeDetector.html#a188b63ffa17922b2c65d8a0ab7b70775
+func (a *QRCodeDetector) DetectAndDecodeMulti(input Mat, decoded *[]string, points *Mat, qrCodes *[]Mat) bool {
 	cDecoded := C.CStrings{}
 	defer C.CStrings_Close(cDecoded)
 	cQrCodes := C.struct_Mats{}
 	defer C.Mats_Close(cQrCodes)
-	C.QRCodeDetector_DetectAndDecodeMulti(a.p, input.p, &cDecoded, points.p, &cQrCodes)
-
-	qrCodes = make([]Mat, cQrCodes.length)
-	for i := C.int(0); i < cQrCodes.length; i++ {
-		qrCodes[i].p = C.Mats_get(cQrCodes, i)
+	success := C.QRCodeDetector_DetectAndDecodeMulti(a.p, input.p, &cDecoded, points.p, &cQrCodes)
+	if !success {
+		return bool(success)
 	}
 
-	return toGoStrings(cDecoded), qrCodes
+	tmpCodes := make([]Mat, cQrCodes.length)
+	for i := C.int(0); i < cQrCodes.length; i++ {
+		tmpCodes[i].p = C.Mats_get(cQrCodes, i)
+	}
+
+	for _, qr := range tmpCodes {
+		*qrCodes = append(*qrCodes, qr)
+	}
+
+	for _, s := range toGoStrings(cDecoded) {
+		*decoded = append(*decoded, s)
+	}
+	return bool(success)
 }

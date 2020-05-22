@@ -435,6 +435,7 @@ func (net *Net) GetUnconnectedOutLayers() (ids []int) {
 //
 func (net *Net) GetLayerNames() (names []string) {
 	cstrs := C.CStrings{}
+	defer C.CStrings_Close(cstrs)
 	C.Net_GetLayerNames((C.Net)(net.p), &cstrs)
 	return toGoStrings(cstrs)
 }

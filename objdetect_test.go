@@ -166,24 +166,30 @@ func TestQRCodeDetector(t *testing.T) {
 
 	multiBox2 := NewMat()
 	defer multiBox2.Close()
-	decoded, qrCodes := detector.DetectAndDecodeMulti(img2, &multiBox2)
-	defer qrCodes[0].Close()
-	defer qrCodes[1].Close()
-
-	qrCodes0 := padQr(&(qrCodes[0]))
-	defer qrCodes0.Close()
-	m := NewMat()
-	defer m.Close()
-	decoded0 := detector.Decode(qrCodes0, m, &qrCodes0)
-	if decoded0 != decoded[0] {
-		t.Errorf("Error in TestQRCodeDetector Multi test: decoded[0]=%s, decoded straigh QR=%s", decoded[0], decoded0)
+	decoded := []string{}
+	qrCodes := make([]Mat, 0)
+	defer func() {
+		for _, q := range qrCodes {
+			q.Close()
+		}
+	}()
+	success := detector.DetectAndDecodeMulti(img2, &decoded, &multiBox2, &qrCodes)
+	if !success {
+		t.Errorf("Error in TestQRCodeDetector Multi test: returned false")
 	}
 
-	qrCodes1 := padQr(&(qrCodes[1]))
-	defer qrCodes1.Close()
-	decoded1 := detector.Decode(qrCodes1, m, &qrCodes1)
-	if decoded1 != decoded[1] {
-		t.Errorf("Error in TestQRCodeDetector Multi test: decoded[1]=%s, decoded straigh QR=%s", decoded[1], decoded1)
+	tmpPoints := NewMat()
+	defer tmpPoints.Close()
+	tmpQr := NewMat()
+	defer tmpQr.Close()
+	var tmpDecoded string
+	for i, s := range decoded {
+		tmpInput := padQr(&(qrCodes[i]))
+		defer tmpInput.Close()
+		tmpDecoded = detector.Decode(tmpInput, tmpPoints, &tmpQr)
+		if tmpDecoded != s {
+			t.Errorf("Error in TestQRCodeDetector Multi test: decoded straight QR code=%s, decoded[%d] =%s", tmpDecoded, i, s)
+		}
 	}
 }
 
