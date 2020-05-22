@@ -158,8 +158,10 @@ bool QRCodeDetector_DetectAndDecodeMulti(QRCodeDetector qr, Mat input, CStrings*
   std::vector<cv::String> decodedCodes;
   std::vector<cv::Mat> straightQrCodes;
   bool res = qr->detectAndDecodeMulti(*input, decodedCodes, *points, straightQrCodes);
+  if (!res) {
+    return res;
+  }
 
-  // convert straightQrCodes to qrCodes
   qrCodes->mats = new Mat[straightQrCodes.size()];
   qrCodes->length = straightQrCodes.size();
   for (size_t i = 0; i < straightQrCodes.size(); i++) {
