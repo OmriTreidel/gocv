@@ -211,6 +211,7 @@ func (a *QRCodeDetector) Close() error {
 
 // DetectAndDecode Both detects and decodes QR code.
 //
+// Returns true as long as some QR code was detected even in case where the decoding failed
 // For further details, please see:
 // https://docs.opencv.org/master/de/dc3/classcv_1_1QRCodeDetector.html#a7290bd6a5d59b14a37979c3a14fbf394
 //
@@ -241,7 +242,8 @@ func (a *QRCodeDetector) Decode(input Mat, points Mat, straight_qrcode *Mat) str
 
 // Detects QR codes in image and finds of the quadrangles containing the codes.
 //
-// each quadrangle would be returned as a row in the `points` Mat and each point is a Vecf.
+// Each quadrangle would be returned as a row in the `points` Mat and each point is a Vecf.
+// Returns true if QR code was detected
 // For usage please see TestQRCodeDetector
 // For further details, please see:
 // https://docs.opencv.org/master/de/dc3/classcv_1_1QRCodeDetector.html#aaf2b6b2115b8e8fbc9acf3a8f68872b6
@@ -253,6 +255,7 @@ func (a *QRCodeDetector) DetectMulti(input Mat, points *Mat) bool {
 // Detects QR codes in image and finds of the quadrangles containing the codes and decode the decode the QRCodes to strings.
 //
 // Each quadrangle would be returned as a row in the `points` Mat and each point is a Vecf.
+// Returns true as long as some QR code was detected even in case where the decoding failed
 // For usage please see TestQRCodeDetector
 // For further details, please see:
 //https://docs.opencv.org/master/de/dc3/classcv_1_1QRCodeDetector.html#a188b63ffa17922b2c65d8a0ab7b70775
