@@ -62,13 +62,13 @@ func TestVideoCaptureInvalid(t *testing.T) {
 
 func TestVideoCaptureWithAPI(t *testing.T) {
 	t.Run("video capture file with api", func(t *testing.T) {
-		vc, err := OpenVideoCaptureWithAPI("images/small.mp4", VideoCaptureGstreamer)
+		vc, err := OpenVideoCaptureWithAPI("images/small.mp4", VideoCaptureAny)
 		if err != nil {
 			t.Errorf("error loading a file: %v", err)
 		}
 		backend := vc.Get(VideoCaptureBackend)
-		if backend != float64(VideoCaptureGstreamer) {
-			t.Errorf("video capture backend api was not %f instead of %d", backend, VideoCaptureGstreamer)
+		if backend == float64(VideoCaptureAny) {
+			t.Errorf("video capture backend api did not select a backend")
 		}
 	})
 }
